@@ -1,0 +1,136 @@
+h1{
+    margin-top:2%;
+}
+
+#nav_bar{
+    background-color: rgb(72, 104, 134);
+}
+
+#nav_bar h1{
+    margin-top:1%;
+    margin-bottom:1%;
+    display:inline-block;
+    margin-left:2%;
+    color: azure;
+}
+
+#nav_bar a{
+    color:azure;
+    margin-left: 45%;
+    cursor:pointer;
+}
+
+#nav_bar div{
+    display:inline-block;
+    margin-left: 2%;
+    width:10%;
+    cursor:pointer;
+}
+
+#nav_bar img{
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 3%
+}
+
+#nav_bar p{
+    color:azure;
+    display:inline-block;
+}
+
+#github{
+    cursor: pointer;
+}
+
+#background_black{
+    position:fixed;
+    top:0%;
+    left:0%;
+    width:100%;
+    height: 100%;
+    display:none;
+    background-color: black;
+    opacity: 0.2;
+}
+
+#contribute{
+    border-radius: 15px;
+    position:fixed;
+    left:30%;
+    top:30%;
+    display:none;
+    width:45%;
+    background-color: rgb(255, 255, 255);
+}
+
+
+#contribute_heading{
+    background-color: rgb(72, 104, 134);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    text-align:center;
+}
+
+#contribute_heading p{
+    display:inline-block;
+}
+
+#contribute_heading p:first-child{
+    color:white;
+    margin-left:6%;
+}
+
+#contribute_heading p:last-child{
+    color:white;
+    cursor:pointer;
+    float:right;
+    margin-right: 5%;
+}
+
+#contribute_form{
+    margin-left: 11%;
+    margin-top:5%;
+}
+
+#submit{
+    margin-top:5%;
+    margin-left: 40%;
+    margin-bottom:3%;
+    cursor:pointer;
+}
+
+#loading{
+    display:none;
+    text-align:center;
+}
+
+#success{
+    display:none;
+    text-align: center;
+}
+
+#success img{
+    margin-top:5%;
+    width:20%;
+}
+
+#success p{
+    margin-top:5%;
+}
+
+.tr{
+    cursor:pointer
+}
+
+.tr:hover{
+    background-color: rgb(141, 140, 139);
+}
+
+table{
+    margin-top:2%;
+}
+
+table th{
+    width:5%;
+}   

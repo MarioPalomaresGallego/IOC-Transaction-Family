@@ -1,7 +1,7 @@
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
-from hashlib import sha512
+from hashlib import sha256
 
 class S(BaseHTTPRequestHandler):
 
@@ -25,7 +25,7 @@ class S(BaseHTTPRequestHandler):
 		payload = payload.split("\r\n\r\n".encode())
 		payload = payload[1].split("\n\r\n".encode())[0]
 
-		file_name = sha512(payload).hexdigest()
+		file_name = sha256(payload).hexdigest()
 		if not os.path.exists("/tmp/" + file_name):
 			with open("/tmp/" + file_name,"bx") as file:
 				file.write(payload)
