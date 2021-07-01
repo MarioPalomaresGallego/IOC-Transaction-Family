@@ -34,7 +34,7 @@ URL = "http://localhost:8008/batches"
 signer = None
 
 def make_address(payload_bytes):
-	return IOC_NAMESPACE + hashlib.sha512(payload_bytes).hexdigest()[:64]
+	return IOC_NAMESPACE + hashlib.sha256(payload_bytes).hexdigest()
 
 def generate_keys():
 	
@@ -77,11 +77,11 @@ def obtain_keys():
 
 	signer = CryptoFactory(create_context('secp256k1')).new_signer(private_key)
 
-def send_transaction(payload_bytes):
+def send_transaction(payload_bytes, private_key, global_state_addr):
 
-	global signer
+	context = sawtooth_signing.create_context("secp256k1")
+	signer = CryptoFactory(context).new_signer(Secp256k1PrivateKey.from_hex(private_key))
 
-	global_state_addr = make_address(payload_bytes)
 	txn_header_bytes = TransactionHeader(
 		family_name='ioc',
 		family_version='1.0',
@@ -101,13 +101,7 @@ def send_transaction(payload_bytes):
 		header_signature=signature,
 		payload=payload_bytes
 	)
-
-	txn_list_bytes = TransactionList(
-		transactions=[txn]
-	).SerializeToString()
-
-	txn_bytes = txn.SerializeToString()
-
+	
 	txns = [txn]
 
 	batch_header_bytes = BatchHeader(
@@ -123,12 +117,15 @@ def send_transaction(payload_bytes):
 		transactions=txns
 	)
 
+	LOGGER.debug("Batch signature:" + signature)
+
 	batch_list_bytes = BatchList(batches=[batch]).SerializeToString()
 
 	headers={'Content-Type': 'application/octet-stream'}
 
-	result = requests.post(URL, headers=headers, data=payload_bytes)
-	if(result.status_code != 200):
-		print("Error sending the transaction")
+	result = requests.post(URL, headers=headers, data=batch_list_bytes)
+	if(result.status_code != 202):
+		LOGGER.error("Error sending the transaction")
+		LOGGER.error(result.text)
 
 	

@@ -7,11 +7,80 @@
   <title>Report Details</title>
   <meta name="description" content="The HTML5 Herald">
   <meta name="author" content="SitePoint">
-
-
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'index.css'%}">
+  <link rel="stylesheet" href="{% static 'details.css'%}">
 </head>
 
 <body>
+  <div id="nav_bar">
+    <h1><a href="http://localhost:8081/ioc">IOC Sharing Platform</a></h1>
+    <div class = "github" onclick='location.href="https://github.com/MarioPalomaresGallego/IOC-Transaction-Family"'>
+        <img src="{% static 'images/github.png'%}">
+        <p>Github Repo</p>
+    </div>
+    <a class="contribute_link" onclick="contribute(1)">Contribute</a>
+    <a class="download">Download</a>
+  </div>
+
+  <div class="report">
+    <h2>Read Files</h2>
+    <ul>
+      {% for f in read_files %}
+      <li>{{f}}</li>
+      {% endfor %}
+    </ul>
+    <h2>Write Files</h2>
+    <ul>
+      {% for f in write_files %}
+      <li>{{f}}</li>
+      {% endfor %}
+    </ul>
+    <h2>Read Keys</h2>
+    <ul>
+      {% for f in read_keys %}
+      <li>{{f}}</li>
+      {% endfor %}
+    </ul>
+    <h2>Write Keys</h2>
+    <ul>
+      {% for f in write_keys %}
+      <li>{{f}}</li>
+      {% endfor %}
+    </ul>
+    <h2>Delete Keys</h2>
+    <ul>
+      {% for f in delete_keys %}
+      <li>{{f}}</li>
+      {% endfor %}
+    </ul>
+    <h2>Executed Commands</h2>
+    <ul>
+      {% for f in executed_commands %}
+      <li>{{f}}</li>
+      {% endfor %}
+    </ul>
+    <h2>Resolved API</h2>
+    <ul>
+      {% for f in resolved_api %}
+      <li>{{f}}</li>
+      {% endfor %}
+    </ul>
+    <h2>Created Services</h2>
+    <ul>
+      {% for f in created_services %}
+      <li>{{f}}</li>
+      {% endfor %}
+    </ul>
+    <h2>Started Services</h2>
+    <ul>
+      {% for f in started_services %}
+      <li>{{f}}</li>
+      {% endfor %}
+    </ul>
+
+  </div>
+
 
 </body>
 

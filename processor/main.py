@@ -1,11 +1,12 @@
 
 from sawtooth_sdk.processor.core import TransactionProcessor
 from sawtooth_sdk.processor.log import init_console_logging
-from processor import IocTransactionHandler
+from handler import IocTransactionHandler
+import logging
 
 try:
 
-	#init_console_logging(verbose_level=)
+	init_console_logging(verbose_level=logging.DEBUG)
 	processor = TransactionProcessor(url="tcp://127.0.0.1:4004")
 	handler = IocTransactionHandler()
 	processor.add_handler(handler)

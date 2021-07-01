@@ -10,48 +10,136 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'index.css'%}">
     <script src="{% static 'index.js'%}"></script>
+    <script src="{% static 'sawtooth_sdk.js'%}"></script>
 </head>
 
 <body>
     <div id="nav_bar">
-        <h1>IOC Sharing Platform</h1>
-        <a onclick="contribute(1)">Contribute</a>
-        <div onclick='location.href="https://github.com/MarioPalomaresGallego/IOC-Transaction-Family"'>
+        <h1><a href="http://localhost:8081/ioc">IOC Sharing Platform</a></h1>
+        <div class = "github" onclick='location.href="https://github.com/MarioPalomaresGallego/IOC-Transaction-Family"'>
             <img src="{% static 'images/github.png'%}">
             <p>Github Repo</p>
         </div>
+        <a class="contribute_link" onclick="contribute(1)">Contribute</a>
+        <a class="download">Download</a>
     </div>
 
-    <table>
-        <tr>
-            <th>Machine</th>
-            <th>Sandbox</th>
-            <th>Type</th>
-            <th>FileHash</th>
-        </tr>
-        {% for report in report_list %}
-        <tr>
-            <td>
-                <div>
-                    <img src="{% static 'images/windows.png'%}">
-                    <p>{{ report.machine }}</p>
-                    <p>{{ report.date}}</p>
+    <div class="search">
+        <ul>
+            <li>
+                <input type='radio' value='md5' name='hash' id='hash1' checked="checked"/>
+                <label for='hash1'>md5</label>
+            </li>
+            <li>
+                <input type='radio' value='sha1' name='hash'  id='hash2'/>
+                <label for='hash2'>sha1</label>
+            </li>
+            <li>
+                <input type='radio' value='sha256' name='hash'  id='hash3'/>
+                <label for='hash3'>sha256</label>
+            </li>
+        </ul>
+        <input id="search_bar" type="text" placeholder="File hash. e.g. [md5] 912ec803b2ce49e4a541068d495ab570">
+        <input id="search_submit" type="submit" value="Search" onclick=search()>
+    </div>
+
+    <div id="table">
+        <div id="headers" class="tr">
+            <p class="td td_1"></p>
+            <p class="td td_2">Machine</p>
+            <p class="td td_3">Sandbox</p>
+            <p class="td td_4">Type</p>
+            <p class="td td_5">FileHash</p>
+        </div>
+        {% for report in report_list_visible%}
+        <div class="tr content">
+            <div class="checkbox td td_1">
+                <input type="checkbox">
+            </div>
+            <div class="report_info" onclick=details("{{report.tx_id}}")>
+                <div class = "info td td_2">
+                    <img class = "win_img" src="{% static 'images/windows.png'%}">
+                    <div>
+                        <p class="machine">{{ report.machine }}</p>
+                        <p class="date">{{ report.date}}</p>
+                    </div>
                 </div>
-            </td>
-            <td>
-                {{ report.sandbox }}
-            </td>
-            <td>{{ report.type }}</td>
-            <td>
-                <div>
-                    {{ report.sha1 }}
-                    {{ report.sha256 }}
-                    {{ report.sha512 }}
+                <div class="td td_3 sandbox">
+                    {{ report.sandbox }}
                 </div>
-            </td>
-        </tr>
+                <div class="td td_4 type">{{ report.type }}</div>
+                <div class = "hash td td_5">
+                    <div>
+                        <p>MD5:</p>
+                        <p class = "md5">{{ report.md5 }}</p>
+                    </div>
+                    <div>
+                        <p>SHA1: </p>
+                        <p class ="sha1">{{ report.sha1 }}</p>
+                    </div>
+                    <div>
+                        <p>SHA256: </p>
+                        <p class ="sha256">{{ report.sha256 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% endfor %}
-    </table>
+
+        {% for report in report_list_hidden%}
+        <div class="tr content" style="display:none">
+            <div class="checkbox td td_1">
+                <input type="checkbox">
+            </div>
+            <div class="report_info" onclick=details("{{report.tx_id}}")>
+                <div class = "info td td_2">
+                    <img class = "win_img" src="{% static 'images/windows.png'%}">
+                    <div>
+                        <p id="machine">{{ report.machine }}</p>
+                        <p id="date">{{ report.date}}</p>
+                    </div>
+                </div>
+                <div id="sandbox" class="td td_3">
+                    {{ report.sandbox }}
+                </div>
+                <div id="type" class="td td_4">{{ report.type }}</div>
+                <div class = "hash td td_5">
+                    <div>
+                        <p>MD5:</p>
+                        <p id="md5">{{ report.md5 }}</p>
+                    </div>
+                    <div>
+                        <p>SHA1: </p>
+                        <p id="sha1">{{ report.sha1 }}</p>
+                    </div>
+                    <div>
+                        <p>SHA256: </p>
+                        <p id="sha256">{{ report.sha256 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+    </div>
+    <div class="pages">
+        <p id="left" onclick=change_page("left")>«</p>
+        <ul class="page_num">
+            {% for i in pages|slice:":1" %}
+            <li id = "page">
+                <input type='radio' value='{{i}}' name='page' id="page{{i}}" checked="checked"/>
+                <label onclick=change_page("page",this.innerHTML-1) for="page{{i}}">{{i}}</label>
+            </li>
+            {% endfor %} 
+            {% for i in pages|slice:"1:" %}
+            <li>
+                <input type='radio' value='{{i}}' name='page' id="page{{i}}"/>
+                <label onclick=change_page("page",this.innerHTML-1) for="page{{i}}">{{i}}</label>
+            </li>
+            {% endfor %}   
+        </ul>
+        <p id="right" onclick=change_page("right")>»</p>
+    </div>
     <div id = "background_black">
     </div>
     <div id="contribute">
@@ -59,12 +147,12 @@
             <p>Contribute</p>
             <p onclick=contribute(0)>&#x2715;</p>
         </div>
-        <form id="contribute_form" onsubmit="upload();return false;">
+        <form method = "post" id="contribute_form" name="contribute_form" enctype="multipart/form-data" onsubmit="upload();return false;">
             {% csrf_token %}
-            <label for="behavioural">Select the behavioural report file:</label>
-            <input type="file" id="behavioural">
+            <label for="report">Select the behavioural report file:</label>
+            <input type="file" id="report" name="report" required>
             <label for="sample">Select the sample file:</label>
-            <input type="file" id="sample">
+            <input type="file" id="sample" name="sample" required>
             <input type="submit" value="Submit" id="submit">
         </form>
         <div id="loading">
@@ -73,6 +161,11 @@
         <div id="success">
             <img src="{% static 'images/success.png'%}">
             <p>File Uploaded</p>
+        </div>
+        <div id="error">
+            <img src="{% static 'images/bug.png'%}">
+            <p>An error has occurred</p>
+            <p>Try again later</p>
         </div>
     </div>
 </body>

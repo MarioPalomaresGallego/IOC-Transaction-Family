@@ -22,10 +22,9 @@ class S(BaseHTTPRequestHandler):
 		content_length = self.headers["Content-Length"]
 		#Filter the body from the raw HTTP request
 		payload = self.rfile.read(int(content_length))
-		payload = payload.split("\r\n\r\n".encode())
-		payload = payload[1].split("\n\r\n".encode())[0]
 
 		file_name = sha256(payload).hexdigest()
+		logging.info("File name: " + file_name)
 		if not os.path.exists("/tmp/" + file_name):
 			with open("/tmp/" + file_name,"bx") as file:
 				file.write(payload)
