@@ -33,8 +33,9 @@ URL = "http://localhost:8008/batches"
 
 signer = None
 
-def make_address(payload_bytes):
-	return IOC_NAMESPACE + hashlib.sha256(payload_bytes).hexdigest()
+def make_address(mode,message):
+	if mode == 0: return IOC_NAMESPACE + hashlib.sha256(message).hexdigest()
+	else: return IOC_NAMESPACE + message
 
 def generate_keys():
 	

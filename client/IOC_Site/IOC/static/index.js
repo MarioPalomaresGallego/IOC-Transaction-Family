@@ -62,7 +62,7 @@ function process_block(xhttp){
 
                     type = "Root Report"
                     for(const c of window.state_changes){
-                        if(c.value.includes(tx.header_signature) && c.value.split(",").length >1) type = "Addition"
+                        if(atob(c.value).includes(t.header_signature) && atob(c.value).split(",").length >1) type = "Addition"
                     }
                     report_raw = atob(t.payload)
                     report = JSON.parse(report_raw)

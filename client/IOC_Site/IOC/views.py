@@ -51,6 +51,18 @@ def index(request):
 		machine = "Windows 7"
 		date = report["info"]["started"]
 		sandbox = report["info"]["version"]
+		tx_id = tx["header_signature"]
+
+		addr = make_address(1,sha256)
+		r = requests.get(SAWTOOTH_API + "state/" + addr)
+
+		if r.status_code!=200:
+			_type = "Error"
+		else:
+			response = json.loads(r.text)
+			data = base64.b64decode(response["data"]).decode().split(",")
+			if data[0] == tx_id: _type="Root Behavioural Report"
+			else: _type="Addition"
 
 		info = {
 			"md5" : md5,
@@ -59,10 +71,10 @@ def index(request):
 			"date" : date,
 			"machine" : machine,
 			"sandbox" : sandbox,
-			"tx_id" : tx["header_signature"],
+			"tx_id" : tx_id,
 			# Make a request to the global state to check wether this transaction
 			# is a root behavioural report or not
-			'type' : "Root Behavioural Report"
+			'type' : _type
 		}
 
 		if count > 5: report_list_hidden.append(info)
@@ -130,7 +142,7 @@ def upload(request):
 	}
 	private_key = request.POST["privkey"]
 	LOGGER.debug("Private key: " + private_key)
-	send_transaction(json.dumps(filtered_report).encode(),private_key,make_address(sample_raw))
+	send_transaction(json.dumps(filtered_report).encode(),private_key,make_address(0,sample_raw))
 
 	
 	return HttpResponse()
