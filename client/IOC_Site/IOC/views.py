@@ -79,8 +79,15 @@ def upload(request):
 
 	time.sleep(1)
 
-	#Upload the sample to the HTTP server
+	#Get all the nodes of the network in order to upload the message
+	r = requests.get(SAWTOOTH_API + "peers")
 
+	if(r.status_code !=200):
+		return HttpResponseServerError()
+
+	peers = json.loads(r.text)["data"]
+
+	#Function to read the file from the request
 	def read_file(file):
 		result = b''
 		if file.multiple_chunks:
@@ -89,14 +96,24 @@ def upload(request):
 		else: result = sample.read()
 
 		return result
-	
+
 	sample = request.FILES["sample"]
 	sample_raw = read_file(sample)
 	LOGGER.debug("Sample hash: " + hashlib.sha256(sample_raw).hexdigest())
-	r = requests.post("http://localhost:8080", data=sample_raw)
 
-	if r.status_code != 200:	
-		return HttpResponseServerError()
+	aux = []
+	for p in peers:
+
+		#A peer can be dupplicated in the Sawtooth API response
+		if p not in aux:
+
+			addr = p.replace("tcp","http").replace("8800","8080")
+			LOGGER.debug("Sending sample to: " + addr)
+			r = requests.post(addr, data=sample_raw)
+			if r.status_code != 200:	
+				return HttpResponseServerError()
+
+			aux.append(p)
 
 	
 	report = request.FILES["report"]

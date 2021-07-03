@@ -42,9 +42,8 @@ class IocTransactionHandler(TransactionHandler):
 
 		LOGGER.debug("Transaction recieved")
 		payload = transaction.payload
-		time.sleep(60)
-		LOGGER.debug("The end")
-		return
+		#LOGGER.debug("The end")
+		#return
 
 		#Get the file hash to retrieve the complete program from the tmp folder
 		user_report = json.loads(payload)
