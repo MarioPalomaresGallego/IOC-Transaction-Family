@@ -1,7 +1,7 @@
 
 #!/bin/sh
 
-IP = $(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | grep -v '192.168.122')
+IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | grep -v '192.168.122')
 #PATH to the directory containing the cloned githubs of Sawtooth and CAPE
 ROOT_PATH=""
 #Dir name of CAPE repository
@@ -36,7 +36,7 @@ then
 	tmux split-window -c "$ROOT_URL$SAWTOOTH" -t ioc:1.3 -v
 	tmux send-keys -t ioc:1.0 "sudo -u sawtooth sawtooth-validator -vv" Enter
 	tmux send-keys -t ioc:1.0 "" Enter #WRITE USER KEY !CAREFUL¡
-	tmux send-keys -t ioc:1.1 "sudo -u sawtooth devmode-engine-rust -vv --connect tcp://localhost:5050" Enter
+	tmux send-keys -t ioc:1.1 "sudo -u sawtooth settings-tp -v" Enter
 	tmux send-keys -t ioc:1.1 "" Enter #WRITE USER KEY !CAREFUL¡
 	tmux send-keys -t ioc:1.2 "sudo -u sawtooth sawtooth-rest-api -vv" Enter
 	tmux send-keys -t ioc:1.2 "" Enter #WRITE USER KEY !CAREFUL¡
