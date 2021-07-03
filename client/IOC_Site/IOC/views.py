@@ -87,6 +87,9 @@ def upload(request):
 
 	peers = json.loads(r.text)["data"]
 
+	#Temporary trick to add the local machine to the peer list
+	peers.append("tcp://localhost:8800")
+
 	#Function to read the file from the request
 	def read_file(file):
 		result = b''
