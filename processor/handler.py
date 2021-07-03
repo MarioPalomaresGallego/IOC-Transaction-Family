@@ -49,18 +49,18 @@ class IocTransactionHandler(TransactionHandler):
 		user_report = json.loads(payload)
 		file_name = user_report["target"]["file"]["sha256"]
 		addr = make_address(file_name)
-		state_dict = context.get_state([addr])
+		state_content = context.get_state([addr])
 		LOGGER.debug("File hash: " + file_name)
 
 		# Check whether the incoming behavioural report is a root one of just an
 		# addition over a previous one
 
 		#ADDITION
-		if len(state_dict) > 0:
+		if len(state_content) > 0:
 
 			LOGGER.info("Addition detected")
 			context.set_state({addr:\
-				state_dict[addr]+ "," + transaction.header_signature})
+				state_content[0].data + ",".encode() + transaction.signature.encode()})
 
 		# ROOT BEHAVIOURAL REPORT
 		else:
