@@ -2,10 +2,12 @@ import hashlib
 from django.http.response import HttpResponseServerError
 from django.shortcuts import render
 from django.http import HttpResponse
+from IOC.models import Upload
 import requests
 import json
 import time
 import base64
+from datetime import datetime
 
 from .sawtooth_client import make_address, send_transaction
 
@@ -20,6 +22,8 @@ if not LOGGER.handlers:
 
 SAWTOOTH_API = "http://localhost:8008/"
 
+RESULTS_PER_PAGE = 4
+
 # Create your views here.
 def index(request):
 	
@@ -29,8 +33,7 @@ def index(request):
 	
 	transactions = json.loads(r.text)["data"]
 
-	report_list_visible = []
-	report_list_hidden = []
+	report_list = []
 
 	count = 0
 	for tx in transactions:
@@ -72,25 +75,23 @@ def index(request):
 			"machine" : machine,
 			"sandbox" : sandbox,
 			"tx_id" : tx_id,
-			# Make a request to the global state to check wether this transaction
-			# is a root behavioural report or not
 			'type' : _type
 		}
 
-		if count > 5: report_list_hidden.append(info)
-		else: report_list_visible.append(info)
+		report_list.append(info)
 
 	context = {
-		'report_list_visible': report_list_visible,
-		'report_list_hidden': report_list_hidden,
-		'pages': range(1,math.ceil(count/5)+1)
+		'report_list': report_list,
+		'pages': range(0,math.ceil(count/RESULTS_PER_PAGE)),
+		'uploads': Upload.objects.all()
 	}
 	return render(request,"index.html",context)
 
 def upload(request):
 
-	time.sleep(1)
+	time.sleep(10)
 
+	LOGGER.debug("hola")
 	#Get all the nodes of the network in order to upload the message
 	r = requests.get(SAWTOOTH_API + "peers")
 
@@ -142,35 +143,66 @@ def upload(request):
 	}
 	private_key = request.POST["privkey"]
 	LOGGER.debug("Private key: " + private_key)
-	send_transaction(json.dumps(filtered_report).encode(),private_key,make_address(0,sample_raw))
+	r = send_transaction(json.dumps(filtered_report).encode(),private_key,make_address(0,sample_raw))
 
-	
-	return HttpResponse()
-
+	if r == -1: return HttpResponseServerError()
+	else:
+		#Save the upload information
+		u = Upload(sample_name = request.FILES["sample"].name, report_name = request.FILES["report"].name,date = datetime.now(), batch_id=r)
+		u.save()
+		
+	return HttpResponse(r)
 
 def details(request):
 
-	tx_id = request.GET.__getitem__("tx_id")
-	r = requests.get(SAWTOOTH_API + "transactions/" + tx_id)
+	details_tx_id = request.GET.__getitem__("tx_id")
+	sha256 = request.GET.__getitem__("sha256")
+	
+	addr = make_address(1,sha256)
+	r = requests.get(SAWTOOTH_API + "state/" + addr)
 
-	if r.status_code != 200:
+	data = None
+	if r.status_code!=200:
 		return HttpResponseServerError()
+	else:
+		response = json.loads(r.text)
+		data = base64.b64decode(response["data"]).decode().split(",")
 
-	tx = json.loads(r.text)
+	report_list = []
+	background = None
+	LOGGER.debug(data)
+	for i,tx_id in enumerate(data):
 
-	report = json.loads(base64.b64decode(tx["data"]["payload"]))
+		r = requests.get(SAWTOOTH_API + "transactions/" + tx_id)
 
-	context = {
-		"read_files": report["behavior"]["read_files"],
-		"write_files": report["behavior"]["write_files"],
-		"read_keys": report["behavior"]["read_keys"],
-		"write_keys": report["behavior"]["write_keys"],
-		"delete_keys": report["behavior"]["delete_keys"],
-		"executed_commands": report["behavior"]["executed_commands"],
-		"resolved_api": report["behavior"]["resolved_apis"],
-		"created_services": report["behavior"]["created_services"],
-		"started_services": report["behavior"]["started_services"],
+		if r.status_code != 200:
+			return HttpResponseServerError()
+
+		tx = json.loads(r.text)
+		report = json.loads(base64.b64decode(tx["data"]["payload"]))
+
+		if(details_tx_id == tx_id): background = "rgb(170, 248, 193)"
+		else: background = "white"
+
+		report_list.append({
+			"background":background,
+			"margin" : range(i),
+			"read_files": report["behavior"]["read_files"],
+			"write_files": report["behavior"]["write_files"],
+			"read_keys": report["behavior"]["read_keys"],
+			"write_keys": report["behavior"]["write_keys"],
+			"delete_keys": report["behavior"]["delete_keys"],
+			"executed_commands": report["behavior"]["executed_commands"],
+			"resolved_api": report["behavior"]["resolved_apis"],
+			"created_services": report["behavior"]["created_services"],
+			"started_services": report["behavior"]["started_services"],
+		})
+	context ={
+		"reports" : report_list,
+		"max":i
 	}
+
+	LOGGER.debug(context)
 
 	return render(request,"details.html",context)
 
@@ -182,3 +214,20 @@ def req_block(request):
 
 	return HttpResponse(r.text) 
 
+
+def download(request):
+	tx_id = request.GET.__getitem__("tx_id")
+
+	r = requests.get(SAWTOOTH_API + "transactions/" + tx_id)
+
+	if r.status_code != 200:
+		return HttpResponseServerError()
+
+	tx = json.loads(r.text)
+	report = base64.b64decode(tx["data"]["payload"])
+
+	return HttpResponse(report)
+
+
+def _upload(request):
+	pass

@@ -20,64 +20,152 @@
         <p>Github Repo</p>
     </div>
     <a class="contribute_link" onclick="contribute(1)">Contribute</a>
-    <a class="download">Download</a>
   </div>
 
   <div class="report">
     <h2>Read Files</h2>
-    <ul>
-      {% for f in read_files %}
-      <li>{{f}}</li>
-      {% endfor %}
+    {% for r in  reports %}
+    {% if r.read_files|length > 0 %}
+    <ul style = "background-color: {{r.background}}">
+        {% for f in r.read_files %}
+        <div>
+        {% for i in r.margin %}
+        <p>+</p>
+        {% endfor %}
+        <li>{{f}}</li>
+        </div>
+        {% endfor %}
     </ul>
+    {% endif %}
+    {% endfor %}
+
     <h2>Write Files</h2>
-    <ul>
-      {% for f in write_files %}
-      <li>{{f}}</li>
-      {% endfor %}
+    {% for r in  reports %}
+    {% if r.write_files|length > 0 %}
+    <ul style = "background-color: {{r.background}}">
+        {% for f in r.write_files %}
+        <div>
+        {% for i in r.margin %}
+        <p>+</p>
+        {% endfor %}
+        <li>{{f}}</li>
+        </div>
+        {% endfor %}
     </ul>
+    {% endif %}
+    {% endfor %}
+
     <h2>Read Keys</h2>
-    <ul>
-      {% for f in read_keys %}
-      <li>{{f}}</li>
-      {% endfor %}
+    {% for r in  reports %}
+    {% if r.read_keys|length > 0 %}
+    <ul style = "background-color: {{r.background}}">
+        {% for f in r.read_keys %}
+        <div>
+        {% for i in r.margin %}
+        <p>+</p>
+        {% endfor %}
+        <li>{{f}}</li>
+        </div>
+        {% endfor %}
     </ul>
+    {% endif %}
+    {% endfor %}
+
     <h2>Write Keys</h2>
-    <ul>
-      {% for f in write_keys %}
-      <li>{{f}}</li>
-      {% endfor %}
+    {% for r in  reports %}
+    {% if r.write_keys|length > 0 %}
+    <ul style = "background-color:{{r.background}}">
+        {% for f in r.write_keys %}
+        <div>
+        {% for i in r.margin %}
+        <p>+</p>
+        {% endfor %}
+        <li>{{f}}</li>
+        </div>
+        {% endfor %}
     </ul>
+    {% endif %}
+    {% endfor %}
+
     <h2>Delete Keys</h2>
-    <ul>
-      {% for f in delete_keys %}
-      <li>{{f}}</li>
-      {% endfor %}
+    {% for r in  reports %}
+    {% if r.delete_keys|length > 0 %}
+    <ul style = "background-color: {{r.background}}">
+        {% for f in r.delete_keys %}
+        <div>
+        {% for i in r.margin %}
+        <p>+</p>
+        {% endfor %}
+        <li>{{f}}</li>
+        </div>
+        {% endfor %}
     </ul>
+    {% endif %}
+    {% endfor %}
+
     <h2>Executed Commands</h2>
-    <ul>
-      {% for f in executed_commands %}
-      <li>{{f}}</li>
-      {% endfor %}
+    {% for r in  reports %}
+    {% if r.executed_commands|length > "0" %}
+    <ul style = "background-color: {{r.background}}">
+        {% for f in r.executed_commands %}
+        <div>
+        {% for i in r.margin %}
+        <p>+</p>
+        {% endfor %}
+        <li>{{f}}</li>
+        </div>
+        {% endfor %}
     </ul>
+    {% endif %}
+    {% endfor %}
+
     <h2>Resolved API</h2>
-    <ul>
-      {% for f in resolved_api %}
-      <li>{{f}}</li>
-      {% endfor %}
+    {% for r in  reports %}
+    {% if r.resolved_api|length > 0 %}
+    <ul style = "background-color: {{r.background}}">
+        {% for f in r.resolved_api %}
+        <div>
+        {% for i in r.margin %}
+        <p>+</p>
+        {% endfor %}
+        <li>{{f}}</li>
+        </div>
+        {% endfor %}
     </ul>
+    {% endif %}
+    {% endfor %}
+
     <h2>Created Services</h2>
-    <ul>
-      {% for f in created_services %}
-      <li>{{f}}</li>
-      {% endfor %}
+    {% for r in  reports %}
+    {% if r.created_services|length > 0 %}
+    <ul style = "background-color: {{r.background}}">
+        {% for f in r.created_services %}
+        <div>
+        {% for i in r.margin %}
+        <p>+</p>
+        {% endfor %}
+        <li>{{f}}</li>
+        </div>
+        {% endfor %}
     </ul>
+    {% endif %}
+    {% endfor %}
+
     <h2>Started Services</h2>
-    <ul>
-      {% for f in started_services %}
-      <li>{{f}}</li>
-      {% endfor %}
+    {% for r in  reports %}
+    {% if r.started_services|length > 0 %}
+    <ul style = "background-color: {{r.background}}">
+        {% for f in r.started_services %}
+        <div>
+        {% for i in r.margin %}
+        <p>+</p>
+        {% endfor %}
+        <li>{{f}}</li>
+        </div>
+        {% endfor %}
     </ul>
+    {% endif %}
+    {% endfor %}
 
   </div>
 

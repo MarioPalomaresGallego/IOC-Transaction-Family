@@ -128,5 +128,8 @@ def send_transaction(payload_bytes, private_key, global_state_addr):
 	if(result.status_code != 202):
 		LOGGER.error("Error sending the transaction")
 		LOGGER.error(result.text)
+		return -1
+
+	return signature
 
 	

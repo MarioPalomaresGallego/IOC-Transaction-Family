@@ -1,3 +1,18 @@
 .report{
     margin-left:5%;
 }
+
+ul{
+    list-style: none;
+    padding-left: 5px;
+    padding-top:5px;
+    padding-bottom: 5px;
+    margin: 0;
+}
+
+ul p{
+    display:inline;
+}
+ul li{
+    display:inline-block;
+}
