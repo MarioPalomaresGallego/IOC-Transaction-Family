@@ -49,10 +49,19 @@
                 <label for='hash3'>sha256</label>
             </li>
         </ul>
+        <select name="status" id="status" selected="all">
+            <option value="all">ALL</option>
+            <option value="PENDING">PENDING</option>
+            <option value="COMMITTED">COMMITTED</option>
+            <option value="INVALID">INVALID</option>
+            <option value="UNKNOWN">UNKWONN</option>
+        </select>
         <input id="search_bar" type="search" placeholder="File hash. e.g. [md5] 912ec803b2ce49e4a541068d495ab570">
         <div id="clear" onclick=_clear()>&#x2715;</div>
         <input id="search_submit" type="submit" value="Search" onclick=search()>
     </div>
+
+
 
     <div id="table_submissions">
         <div id="headers" class="tr">
@@ -113,7 +122,7 @@
             <p class="sample td">{{ i.sample_name }}</p>
             <p class="report td">{{ i.report_name }}</p>
             <p class="date td">{{ i.date }}</p>
-            <p class="state td">UNKNOWN</p>
+            <p batch_id = "{{ i.batch_id }}" class="status td">{{ i.status }}</p>
         </div>
         {% endfor %}
     </div>

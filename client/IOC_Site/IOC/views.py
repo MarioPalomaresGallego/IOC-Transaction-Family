@@ -80,10 +80,24 @@ def index(request):
 
 		report_list.append(info)
 
+	uploads = Upload.objects.all()
+	for u in uploads:
+		if u.status != "COMMITED" and u.status!="INVALID":
+			r = requests.get(SAWTOOTH_API + "batch_statuses?id=" + u.batch_id)
+			LOGGER.debug("HOLA")
+			if r.status_code != 200:
+				return HttpResponseServerError()
+
+			status = json.loads(r.text)["data"][0]["status"]
+
+			if u.status != status:
+				u.status = status
+				u.save()
+
 	context = {
 		'report_list': report_list,
 		'pages': range(0,math.ceil(count/RESULTS_PER_PAGE)),
-		'uploads': Upload.objects.all()
+		'uploads': uploads
 	}
 	return render(request,"index.html",context)
 

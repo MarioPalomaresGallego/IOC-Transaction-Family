@@ -363,3 +363,7 @@ hr{
     margin-bottom:1%;
 }
 
+
+#status{
+    display:none;
+}

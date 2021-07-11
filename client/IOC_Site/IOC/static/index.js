@@ -44,7 +44,7 @@ ws.onmessage = (event) =>{
     info = JSON.parse(event.data)
     block_id = info.block_id
     window.state_changes = info.state_changes
-    http_req(window.location.href + "block/?block_id=" + block_id,0)
+    http_req(window.location.href + "block/?block_id=" + block_id,0,null)
 }
 
 
@@ -83,7 +83,6 @@ function process_block(xhttp){
                     table.insertBefore(new_tr,table.children[2])
 
                     window.total_items = window.total_items + 1;
-                    window.total_pages = Math.ceil(window.total_items/RESULTS_PER_PAGE);
 
                     if(window.total_items % RESULTS_PER_PAGE ==1){
                         adjust_pages(window.total_pages,window.total_pages+1)
@@ -91,7 +90,18 @@ function process_block(xhttp){
                     }
                     change_page("page",current_page);
 
+                    //Update the state of the corresponding batches
+                    update = document.querySelector('[batch_id="' + b.header_signature + '"]')
+                    if(update!=null){
+                        update.innerText = "COMMITTED"
+                    }
                 }
+            }
+            status_list = document.getElementsByClassName("status")
+            for(i of status_list){
+                if(i.innerText == "PENDING"){
+                    http_req("http://localhost:8008/batch_statuses?id=" + i.getAttribute("batch_id"),i)
+                }  
             }
         }else if(xhttp.readyState == 4 && xhttp.status!=200){
             console.error("Error requesting block information") 
@@ -99,15 +109,15 @@ function process_block(xhttp){
     }
 }
 
-function update_DOM(xhttp){
+function update_pending(xhttp,elem){
     return function(){
-        if (xhttp.readyState == 4 || xhttp.status == 200) {
-            
+        if (xhttp.readyState == 4 && xhttp.status == 200) {
+            response = JSON.parse(xhttp.responseText)
+            elem.innerText = response.data[0].status
         }else if(xhttp.readyState == 4 && xhttp.status!=200){
-            
+            console.error("Error requesting batch status") 
         }
     }
-
 }
 
 /* FUNCTIONS FOR THE CONTRIBUTE POPUP */
@@ -133,7 +143,7 @@ function upload(){
     if(localStorage.getItem("privkey") == null){
         generate_keys()
     }
-    http_req(window.location.href + "upload/",2);
+    http_req(window.location.href + "upload/",2,null);
     document.getElementById("contribute_form").style.display="none";
     document.getElementById("loading").style.display="block";
 }
@@ -151,10 +161,10 @@ function upload_finish(xhttp){
             new_upload = document.getElementsByClassName("upload")[0].cloneNode(true)
 
             new_upload.getElementsByClassName("sample")[0].innerText = sample 
-            new_upload.getElementsByClassName("report")[0].innerText = report
+            new_upload.getElementsByClassName("report")[0].innerText = report.split("\\")[2]
             new_upload.getElementsByClassName("date")[0].innerText = date
-            //new_upload.getElementsByClassName("batch_id")[0].innerText = xhttp.responseText
-            new_upload.getElementsByClassName("state")[0].innerText = "PENDING"
+            new_upload.getElementsByClassName("status")[0].innerText = "PENDING"
+            new_upload.getElementsByClassName("status")[0].setAttribute("batch_id",xhttp.responseText)
 
             table.insertBefore(new_upload,table.children[2])
             
@@ -167,7 +177,7 @@ function upload_finish(xhttp){
 
 /* GENERIC XML REQUEST FUNCTION */
 
-function http_req(url,type) {
+function http_req(url,type,elem) {
 
     var xhttp = new XMLHttpRequest();
     
@@ -175,8 +185,10 @@ function http_req(url,type) {
         xhttp.onreadystatechange = process_block(xhttp);
     }else if (type==1){
         xhttp.onreadystatechange = update_DOM(xhttp);
-    }else{
+    }else if (type==2){
         xhttp.onreadystatechange = upload_finish(xhttp);
+    }else{
+        xhttp.onreadystatechange = update_pending(xhttp,elem);
     }
 
     if(type <2) xhttp.open("GET", url, true);
@@ -221,7 +233,7 @@ function change_page(action,value,class_name){
         current_page = current_page +1;
     } 
     //Hide all invalid elements
-    hide = document.querySelectorAll('div[show="false"]')
+    hide = document.querySelectorAll('.'+ current_info + '[show="false"]')
     for( elem of hide){
         elem.style.display="none"
     }
@@ -234,9 +246,9 @@ function change_page(action,value,class_name){
 
     //Show proper elements
     show = document.querySelectorAll('.' + current_info + '[show="true"]')
-    for(let i=current_page*RESULTS_PER_PAGE;i<current_page*RESULTS_PER_PAGE+ RESULTS_PER_PAGE;i++){
+    for(let i=current_page*RESULTS_PER_PAGE;i<current_page*RESULTS_PER_PAGE + RESULTS_PER_PAGE;i++){
         if(i>=total_items) break;
-        document.getElementsByClassName(current_info)[i].style.display="block";
+        show[i].style.display="block";
     }
 
     document.getElementById("page" +current_page).checked = true
@@ -251,27 +263,46 @@ function isValidHash(type,hash) {
 
 
 function search(){
-    type = document.querySelector('input[name = "hash"]:checked').value
-    input = document.getElementById("search_bar")
-    hash = input.value
+    if(current_info=="content"){
 
-    if(!isValidHash(type,hash)){
-        alert("Invalid Hash Format")
-        input.value=""
+        type = document.querySelector('input[name = "hash"]:checked').value
+        input = document.getElementById("search_bar")
+        hash = input.value
+
+        if(!isValidHash(type,hash)){
+            alert("Invalid Hash Format")
+            input.value=""
+        }else{
+            total_items = 0
+            for(elem of document.getElementsByClassName("content")){
+                if (elem.getElementsByClassName(type)[0].innerText == hash){
+                    elem.setAttribute("show","true"); 
+                    total_items = total_items + 1;
+                }
+                else elem.setAttribute("show","false")
+            }
+        }
+
     }else{
+
+        status = document.getElementById("status").value
+        _name = document.getElementById("search_bar").value
         total_items = 0
-        for(elem of document.getElementsByClassName("content")){
-            if (elem.getElementsByClassName(type)[0].innerText == hash){
+
+        for(elem of document.getElementsByClassName("upload")){
+            if (elem.getElementsByClassName("status")[0].innerText.match(status) != null || status=="all"){
                 elem.setAttribute("show","true"); 
                 total_items = total_items + 1;
             }
             else elem.setAttribute("show","false")
         }
-        prev_total_pages = total_pages
-        total_pages = Math.ceil(total_items/RESULTS_PER_PAGE)
-        change_page("page",0)
-        adjust_pages(prev_total_pages,total_pages)
+
     }
+    prev_total_pages = total_pages
+    total_pages = Math.ceil(total_items/RESULTS_PER_PAGE)
+    if(total_pages == 0) total_pages = 1
+    change_page("page",0)
+    adjust_pages(prev_total_pages,total_pages)
 }
 
 function _clear(){
@@ -283,7 +314,8 @@ function _clear(){
     }
     prev_total_pages = total_pages
     total_pages = Math.ceil(total_items/RESULTS_PER_PAGE)
-    input = document.getElementById("search_bar")
+    document.getElementById("search_bar").value=""
+
     adjust_pages(prev_total_pages,total_pages)
     change_page("page",0)
 }
@@ -312,15 +344,21 @@ function adjust_pages(prev, post){
 }
 
 function change_content(id){
-    prev_total_pages = total_pages
+
     if(id==1){
         document.getElementById("table_submissions").style.display="block"
         document.getElementById("table_uploads").style.display="none"
-        current_info = "content"
+        document.getElementById("search_bar").setAttribute("placeholder","File hash. e.g. [md5] 912ec803b2ce49e4a541068d495ab570")
+        document.getElementsByClassName("radio")[1].style.display = "inline-block"
+        document.getElementById("status").style.display = "none"
+        window.current_info = "content"
     }else{
         document.getElementById("table_submissions").style.display="none"
         document.getElementById("table_uploads").style.display="block" 
-        current_info = "upload"
+        document.getElementById("search_bar").setAttribute("placeholder","Report Name / Sample Name")
+        document.getElementsByClassName("radio")[1].style.display = "none"
+        document.getElementById("status").style.display = "inline-block"
+        window.current_info = "upload"
     }
     _clear()
 }
