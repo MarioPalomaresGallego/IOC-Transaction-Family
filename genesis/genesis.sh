@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [[ $1 =  "dev" ]];
 then
 	sudo -u sawtooth sawadm genesis config-genesis.batch devmode-config.batch
