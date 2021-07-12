@@ -1,7 +1,12 @@
+#!/bin/bash
 
-#!/bin/sh
+if [[ $2 = "dev"]];
+then
+	IP="localhost"
+else
+	IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | grep -v '192.168.122')
+fi
 
-IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | grep -v '192.168.122')
 # Path to the directory containing the cape and IOC-Transaction family cloned repos
 ROOT_PATH=""
 # Name of the folder containing the cloned CAPE project
@@ -33,12 +38,13 @@ fi
 if [[ $1 = "saw" || $1 = "both" ]];
 then
 
-	tmux new-window -c "ROOT_PATH$SAWTOOTH" -n "SAWTOOTH"
+	tmux new-window -c "$ROOT_PATH$SAWTOOTH" -n "SAWTOOTH"
 	tmux split-window -c "$ROOT_PATH$SAWTOOTH" -t tfm:1.0 -h
 	tmux split-window -c "$ROOT_PATH$SAWTOOTH" -t tfm:1.0 -v
 	tmux split-window -c "$ROOT_PATH$SAWTOOTH" -t tfm:1.0 -v
-	tmux split-window -c "$ROOT_PATH$SAWTOOTH" -t tfm:1.3 -v
 	tmux split-window -c "$ROOT_PATH$SAWTOOTH/processor" -t tfm:1.3 -v
+	tmux split-window -c "$ROOT_PATH$SAWTOOTH" -t tfm:1.3 -v
+	tmux split-window -c "$ROOT_PATH$SAWTOOTH/processor" -t tfm:1.5 -v
 	tmux send-keys -t tfm:1.0 "sudo -u sawtooth sawtooth-validator -vv" Enter
 	tmux send-keys -t tfm:1.0 "$PASSWORD" Enter
 	tmux send-keys -t tfm:1.1 "sudo -u sawtooth settings-tp -v" Enter
@@ -61,7 +67,8 @@ then
 	fi
 	tmux send-keys -t tfm:1.4 "sudo -u sawtooth xo-tp-python -vv" Enter
 	tmux send-keys -t tfm:1.4 "$PASSWORD" Enter
-	tmux send-keys -t tfm:1.5 "python3 server.py" Enter
+	tmux send-keys -t tfm:1.5 "python3 main.py" Enter
+	tmux send-keys -t tfm:1.6 "python3 server.py" Enter
 fi
 
 #WORK
