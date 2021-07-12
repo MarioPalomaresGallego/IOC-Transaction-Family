@@ -80,11 +80,10 @@ def index(request):
 
 		report_list.append(info)
 
-	uploads = Upload.objects.all()
+	uploads = Upload.objects.order_by("-date")
 	for u in uploads:
 		if u.status != "COMMITED" and u.status!="INVALID":
 			r = requests.get(SAWTOOTH_API + "batch_statuses?id=" + u.batch_id)
-			LOGGER.debug("HOLA")
 			if r.status_code != 200:
 				return HttpResponseServerError()
 
@@ -94,6 +93,7 @@ def index(request):
 				u.status = status
 				u.save()
 
+	if count == 0: count = 1
 	context = {
 		'report_list': report_list,
 		'pages': range(0,math.ceil(count/RESULTS_PER_PAGE)),
@@ -102,8 +102,6 @@ def index(request):
 	return render(request,"index.html",context)
 
 def upload(request):
-
-	time.sleep(10)
 
 	LOGGER.debug("hola")
 	#Get all the nodes of the network in order to upload the message
@@ -243,5 +241,15 @@ def download(request):
 	return HttpResponse(report)
 
 
-def _upload(request):
-	pass
+def update_status(request):
+
+	batch_id = request.GET.__getitem__("batch_id")
+
+	r = requests.get(SAWTOOTH_API + "batch_statuses?id=" + batch_id)
+	if r.status_code != 200: 
+		LOGGER.debug(r.text)
+		return HttpResponseServerError(r.text)
+	status = json.loads(r.text)["data"][0]["status"]
+
+	return HttpResponse(status)
+

@@ -107,6 +107,38 @@
         </div>
         {% endfor %}
 
+        <div show="true" class="tr template_submission" style="display:none">
+            <a class="td td_1" download="{{report.tx_id}}.json">
+                <img class = "download" src="{% static 'images/download.png'%}">
+            </a>
+            <div class="report_info">
+                <div class = "info td td_2">
+                    <img class = "win_img" src="{% static 'images/windows.png'%}">
+                    <div>
+                        <p class="machine"></p>
+                        <p class="date"></p>
+                    </div>
+                </div>
+                <div class="td td_3 sandbox">
+                </div>
+                <div class="td td_4 type"></div>
+                <div class = "hash td td_5">
+                    <div>
+                        <p>MD5:</p>
+                        <p class = "md5"></p>
+                    </div>
+                    <div>
+                        <p>SHA1: </p>
+                        <p class ="sha1"></p>
+                    </div>
+                    <div>
+                        <p>SHA256: </p>
+                        <p class ="sha256"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div id="table_uploads">
@@ -125,6 +157,12 @@
             <p batch_id = "{{ i.batch_id }}" class="status td">{{ i.status }}</p>
         </div>
         {% endfor %}
+        <div show="true" class="template_upload tr" style="display:none">
+            <p class="sample td"></p>
+            <p class="report td"></p>
+            <p class="date td"></p>
+            <p batch_id = "{{ i.batch_id }}" class="status td"></p>
+        </div>
     </div>
 
     <div class="pages">

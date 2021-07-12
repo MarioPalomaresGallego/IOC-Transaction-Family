@@ -83,6 +83,10 @@ def send_transaction(payload_bytes, private_key, global_state_addr):
 	context = sawtooth_signing.create_context("secp256k1")
 	signer = CryptoFactory(context).new_signer(Secp256k1PrivateKey.from_hex(private_key))
 
+	_nounce = hex(random.randint(0, 2**64))
+
+	LOGGER.debug(_nounce)
+
 	txn_header_bytes = TransactionHeader(
 		family_name='ioc',
 		family_version='1.0',
@@ -92,7 +96,7 @@ def send_transaction(payload_bytes, private_key, global_state_addr):
 		batcher_public_key=signer.get_public_key().as_hex(),
 		dependencies=[],
 		payload_sha512=sha512(payload_bytes).hexdigest(),
-		nonce=hex(random.randint(0, 2**64))
+		nonce=_nounce
 	).SerializeToString()
 
 	signature = signer.sign(txn_header_bytes)
@@ -115,7 +119,8 @@ def send_transaction(payload_bytes, private_key, global_state_addr):
 	batch = Batch(
 		header=batch_header_bytes,
 		header_signature=signature,
-		transactions=txns
+		transactions=txns,
+		trace = True
 	)
 
 	LOGGER.debug("Batch signature:" + signature)

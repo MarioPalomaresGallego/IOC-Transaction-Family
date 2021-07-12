@@ -68,10 +68,14 @@ function process_block(xhttp){
                     report = JSON.parse(report_raw)
 
                     table = document.getElementById("table_submissions");
-                    template = document.getElementsByClassName("tr")[1];
+                    template = document.getElementsByClassName("template_submission")[0];
                     new_tr = template.cloneNode(true);
 
-                    new_tr.setAttribute('onclick','details("' + t.header_signature + '")')
+                    new_tr.setAttribute("class","tr content")
+                    new_tr.removeAttribute("style")
+                    new_tr.getElementsByClassName("td_1")[0].setAttribute("href","http://localhost:8081/ioc/download/?tx_id=" + t.header_signature)
+                    new_tr.getElementsByClassName("td_1")[0].setAttribute("download",'"' + t.header_signature + '.json"')
+                    new_tr.setAttribute('onclick','details("' + t.header_signature + '","' + report.target.file.sha256 + '")')
                     new_tr.getElementsByClassName("machine")[0].innerText = "Windows 7";
                     new_tr.getElementsByClassName("date")[0].innerText = report.info.started;
                     new_tr.getElementsByClassName("sandbox")[0].innerText = report.info.version;
@@ -82,13 +86,17 @@ function process_block(xhttp){
 
                     table.insertBefore(new_tr,table.children[2])
 
-                    window.total_items = window.total_items + 1;
+                    if(current_info == "content"){
 
-                    if(window.total_items % RESULTS_PER_PAGE ==1){
-                        adjust_pages(window.total_pages,window.total_pages+1)
+                        window.total_items = window.total_items + 1;
 
+                        if(window.total_items % RESULTS_PER_PAGE == 1 && window.total_items > document.getElementsByClassName("radio")[2].lastElementChild.innerText * RESULTS_PER_PAGE){
+                            adjust_pages(window.total_pages,window.total_pages + 1)
+                            window.total_pages = window.total_pages + 1
+    
+                        }
+                        change_page("page",current_page);
                     }
-                    change_page("page",current_page);
 
                     //Update the state of the corresponding batches
                     update = document.querySelector('[batch_id="' + b.header_signature + '"]')
@@ -100,7 +108,7 @@ function process_block(xhttp){
             status_list = document.getElementsByClassName("status")
             for(i of status_list){
                 if(i.innerText == "PENDING"){
-                    http_req("http://localhost:8008/batch_statuses?id=" + i.getAttribute("batch_id"),i)
+                    http_req( window.location.href + "update_status/?batch_id=" + i.getAttribute("batch_id"),3,i)
                 }  
             }
         }else if(xhttp.readyState == 4 && xhttp.status!=200){
@@ -112,8 +120,7 @@ function process_block(xhttp){
 function update_pending(xhttp,elem){
     return function(){
         if (xhttp.readyState == 4 && xhttp.status == 200) {
-            response = JSON.parse(xhttp.responseText)
-            elem.innerText = response.data[0].status
+            elem.innerText = xhttp.responseText
         }else if(xhttp.readyState == 4 && xhttp.status!=200){
             console.error("Error requesting batch status") 
         }
@@ -132,9 +139,11 @@ function contribute(action){
     }else{
         document.getElementById("contribute").style.display="none";
         document.getElementById("background_black").style.display="none";
-        document.getElementById("contribute_form").style.display="block";
-        document.getElementById("success").style.display="none";
-        document.getElementById("error").style.display="none";
+        if(document.getElementById("loading").style.display != "block"){
+            document.getElementById("contribute_form").style.display="block";
+            document.getElementById("success").style.display="none";
+            document.getElementById("error").style.display="none";
+        }
     }
 }
 
@@ -157,16 +166,30 @@ function upload_finish(xhttp){
             report = document.getElementById("report").value
             sample = document.getElementById("sample").value
             date = (new Date()).toISOString().replace("T", " ").replace(/\.[0-9]*Z/,"")
-            table = document.getElementById("table_uploads")
-            new_upload = document.getElementsByClassName("upload")[0].cloneNode(true)
 
-            new_upload.getElementsByClassName("sample")[0].innerText = sample 
+            table = document.getElementById("table_uploads")
+            new_upload = document.getElementsByClassName("template_upload")[0].cloneNode(true)
+
+            new_upload.setAttribute("class","upload tr")
+            new_upload.removeAttribute("style")
+            new_upload.getElementsByClassName("sample")[0].innerText = sample.split("\\")[2] 
             new_upload.getElementsByClassName("report")[0].innerText = report.split("\\")[2]
             new_upload.getElementsByClassName("date")[0].innerText = date
             new_upload.getElementsByClassName("status")[0].innerText = "PENDING"
             new_upload.getElementsByClassName("status")[0].setAttribute("batch_id",xhttp.responseText)
 
             table.insertBefore(new_upload,table.children[2])
+
+            if(current_info == "upload") {
+
+                window.total_items = window.total_items + 1;
+
+                if(window.total_items % RESULTS_PER_PAGE ==1){
+                    adjust_pages(window.total_pages,window.total_pages+1)
+                    window.total_pages = window.total_pages + 1
+                }
+                change_page("page",current_page);
+            }
             
 
         }else if(xhttp.readyState == 4 && xhttp.status!=200){
@@ -191,7 +214,7 @@ function http_req(url,type,elem) {
         xhttp.onreadystatechange = update_pending(xhttp,elem);
     }
 
-    if(type <2) xhttp.open("GET", url, true);
+    if(type <2 || type==3) xhttp.open("GET", url, true);
     else  xhttp.open("POST",url,true)
 
     if(type==2){
@@ -214,13 +237,19 @@ function details(tx_id,sha256){
 current_page = 0
 window.onload = function() {
     window.total_items = document.getElementsByClassName("content").length
-    window.total_pages = Math.ceil(total_items/RESULTS_PER_PAGE)
+    if(window.total_items == 0){
+        window.total_pages = 1
+    }else{
+        window.total_pages = Math.ceil(total_items/RESULTS_PER_PAGE)
+    }
+
     window.current_info = "content"
     change_page("page",0)
     document.getElementById("page0").checked = true
+    document.getElementById("real_time").checked = true
 };
 
-function change_page(action,value,class_name){
+function change_page(action,value){
 
     past_page = current_page
 
@@ -248,6 +277,7 @@ function change_page(action,value,class_name){
     show = document.querySelectorAll('.' + current_info + '[show="true"]')
     for(let i=current_page*RESULTS_PER_PAGE;i<current_page*RESULTS_PER_PAGE + RESULTS_PER_PAGE;i++){
         if(i>=total_items) break;
+        if(show.length == 0) break;
         show[i].style.display="block";
     }
 
@@ -291,8 +321,13 @@ function search(){
 
         for(elem of document.getElementsByClassName("upload")){
             if (elem.getElementsByClassName("status")[0].innerText.match(status) != null || status=="all"){
-                elem.setAttribute("show","true"); 
-                total_items = total_items + 1;
+                if(elem.getElementsByClassName("report")[0].innerText.match(_name) != null ||
+                        elem.getElementsByClassName("sample")[0].innerText.match(_name) ||
+                        _name == "")
+                {
+                    elem.setAttribute("show","true"); 
+                    total_items = total_items + 1;
+                }
             }
             else elem.setAttribute("show","false")
         }
@@ -313,6 +348,7 @@ function _clear(){
         total_items = total_items + 1;
     }
     prev_total_pages = total_pages
+    if(total_items==0) total_items = total_items + 1;
     total_pages = Math.ceil(total_items/RESULTS_PER_PAGE)
     document.getElementById("search_bar").value=""
 
