@@ -27,9 +27,13 @@ def compare_reports(user_report,compare_report):
 	similarity_rate = []
 	for k in user_report:
 
-		if(len(user_report[k]) == 0 or len(compare_report[k]) == 0): continue
+		if(len(user_report[k]) == 0 or len(compare_report[k]) == 0):
+			LOGGER.debug("Ignoring field: " + k)
+			continue
 			
-		similarity_rate.append(compare_field(user_report[k],compare_report[k]))
+		r = compare_field(user_report[k],compare_report[k])
+		LOGGER.debug("Comparison result of field: " + k + " = " + r)
+		similarity_rate.append(r)
 
 	if min(similarity_rate) > 0.8 : return True, similarity_rate
 	else: return False, similarity_rate
@@ -75,7 +79,6 @@ class IocTransactionHandler(TransactionHandler):
 		state_content = context.get_state([addr])
 		LOGGER.debug("File hash: " + file_name)
 
-		return
 
 		# Check whether the incoming behavioural report is a root one of just an
 		# addition over a previous one
