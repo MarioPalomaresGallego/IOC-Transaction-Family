@@ -32,7 +32,7 @@ def compare_reports(user_report,compare_report):
 			continue
 			
 		r = compare_field(user_report[k],compare_report[k])
-		LOGGER.debug("Comparison result of field: " + k + " = " + r)
+		LOGGER.debug("Comparison result of field: " + k + " = " + str(r))
 		similarity_rate.append(r)
 
 	if min(similarity_rate) > 0.8 : return True, similarity_rate
@@ -139,7 +139,7 @@ class IocTransactionHandler(TransactionHandler):
 				break
 			elif status in ["completed","processing","running","pending","analyzed"]:
 				LOGGER.debug("CAPE task still ongoing. Waiting...")
-				time.sleep(40)
+				time.sleep(15)
 			else:
 				raise InternalError("CAPE processing error")
 
